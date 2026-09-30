@@ -1,12 +1,16 @@
-name: a2a-platform
+name: identyclaw-a2a
 label: IdentyClaw A2A
 kind: platform
 version: 0.1.0
 description: >
   Overlay for Hermes bundled A2A: Passport JWT inbound auth (token_id identity),
   /api/login + /api/login/timestamp for peer login_server, and outbound a2a_call
-  that mints per-peer JWTs via the identyclaw-auth sidecar. Same plugin key as
-  bundled a2a-platform so user/project install last-writer-wins.
+  that mints per-peer JWTs via the identyclaw-auth sidecar.
+
+  Plugin id is identyclaw-a2a (unique — do not reuse bundled yaml name
+  a2a-platform, or `hermes plugins enable` resolves to platforms/a2a).
+  After install: `hermes plugins disable platforms/a2a` then
+  `hermes plugins enable identyclaw-a2a --allow-tool-override`.
 author: Discernible IO
 capabilities:
   - tools.override
