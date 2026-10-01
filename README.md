@@ -8,6 +8,9 @@ Passport JWT inbound auth (`token_id` identity), peer `/api/login` +
 Requires the host auth package ([hermes-identyclaw-auth](https://github.com/discernible-io/hermes-identyclaw-auth))
 — CLI + sidecar — **not** a Hermes plugin.
 
+Follows the stock [Hermes Plugins](https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins/) flow:
+`hermes plugins install owner/repo` → enable (opt-in) → capability consent.
+
 ## Naming (important)
 
 | Surface | Value |
@@ -19,18 +22,55 @@ Requires the host auth package ([hermes-identyclaw-auth](https://github.com/disc
 Do **not** reuse yaml name `a2a-platform`. `hermes plugins enable a2a-platform`
 resolves to the **bundled** adapter (`platforms/a2a`) first.
 
-## Install (Hermes way)
+Catalog submission is optional. `owner/repo` installs are the standard
+unreviewed Git path (same as any third-party plugin).
+
+## Install (default Hermes UX)
+
+Sidecar must be healthy first (`curl -fsS http://127.0.0.1:9910/health`).
+
+Interactive (matches the Plugins guide — install, then answer the prompts):
 
 ```bash
 export HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
-curl -fsS http://127.0.0.1:9910/health
 
+hermes plugins install discernible-io/hermes-identyclaw-a2a
+# Enable 'identyclaw-a2a' now? → y
+# Grant tools.override? → y
+
+# Bundled A2A auto-loads; turn it off so this overlay owns the tools:
+hermes plugins disable platforms/a2a
+```
+
+Confirm:
+
+```bash
+hermes plugins list --plain --no-bundled
+hermes plugins capabilities identyclaw-a2a
+```
+
+Restart the gateway if it is already running (`hermes gateway restart`).
+
+### Scripted / non-interactive
+
+Same CLI flags the guide documents (`--no-enable` / `--enable`). Non-interactive
+sessions fail closed on capability consent — pass `--allow-tool-override` on enable:
+
+```bash
 hermes plugins install discernible-io/hermes-identyclaw-a2a --no-enable
 hermes plugins disable platforms/a2a
 hermes plugins enable identyclaw-a2a --allow-tool-override
 ```
 
-Capability grant (either form):
+Or one-shot enable after install (still grant override separately if there was no TTY):
+
+```bash
+hermes plugins install discernible-io/hermes-identyclaw-a2a --enable
+hermes plugins disable platforms/a2a
+hermes plugins enable identyclaw-a2a --allow-tool-override
+```
+
+### Config equivalent
 
 ```yaml
 plugins:
@@ -57,7 +97,8 @@ disable bundled for stock installs.
 ## Full playbook
 
 ```bash
-bash "$HERMES_HOME/hermes-identyclaw-auth/scripts/install-stock-hermes.sh"
+bash "$HERMES_HOME/hermes-identyclaw-auth/scripts/install-stock-hermes.sh" \
+  --a2a-public-url "https://YOUR.PUBLIC.HOST"
 ```
 
 ## Env
@@ -69,5 +110,3 @@ bash "$HERMES_HOME/hermes-identyclaw-auth/scripts/install-stock-hermes.sh"
 | `A2A_PUBLIC_URL` | Public HTTPS base (Agent Card / discovery) |
 | `A2A_PORT` / `A2A_HOST` | Inbound listen |
 | `IDENTYCLAW_JWT_AUDIENCE` | Optional fallback only |
-
-Catalog submission is optional; `owner/repo` installs work without it.
