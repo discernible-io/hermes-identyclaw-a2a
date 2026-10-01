@@ -18,8 +18,25 @@ _PLATFORM_HINT = (
 )
 
 
+def _auth_sidecar_ok() -> bool:
+    try:
+        from .sidecar_client import health
+
+        return bool(health())
+    except Exception:
+        return False
+
+
 def check_requirements() -> bool:
-    return True
+    """Require the identyclaw-auth sidecar on :9910 before enabling A2A."""
+    if _auth_sidecar_ok():
+        return True
+    logger.error(
+        "IdentyClaw A2A: auth sidecar not healthy on IDENTYCLAW_AUTH_PORT "
+        "(default 9910). Enable plugin identyclaw-auth first, then: "
+        "hermes identyclaw install-deps && hermes identyclaw sidecar start"
+    )
+    return False
 
 
 def validate_config(config) -> bool:
@@ -41,7 +58,14 @@ def interactive_setup() -> None:
     )
 
     print_header("IdentyClaw A2A (Passport)")
-    print_info("Overlays bundled A2A with Passport JWT auth via the auth sidecar.")
+    print_info(
+        "Overlays bundled A2A with Passport JWT auth via the auth sidecar. "
+        "Enable identyclaw-auth and start the sidecar before this platform."
+    )
+    if not _auth_sidecar_ok():
+        print_info(
+            "Auth sidecar /health failed — run: hermes identyclaw sidecar start"
+        )
     for env, label in (
         ("IDENTYCLAW_AUTH_PORT", "Auth sidecar port (default 9910)"),
         ("A2A_PUBLIC_URL", "Public HTTPS base URL (Agent Card)"),
@@ -59,6 +83,12 @@ def interactive_setup() -> None:
 
 
 def register(ctx) -> None:
+    if hasattr(ctx, "has_plugin") and not ctx.has_plugin("identyclaw-auth"):
+        logger.warning(
+            "IdentyClaw A2A: plugin identyclaw-auth is not enabled — "
+            "install/enable it before peer A2A will work "
+            "(hermes plugins install discernible-io/hermes-identyclaw-auth)"
+        )
     try:
         from .outbound_tools import register_tools
 
@@ -76,7 +106,10 @@ def register(ctx) -> None:
             validate_config=validate_config,
             is_connected=is_connected,
             required_env=[],
-            install_hint="Requires hermes-identyclaw-auth sidecar",
+            install_hint=(
+                "Requires identyclaw-auth plugin + sidecar "
+                "(`hermes identyclaw sidecar start`, health on :9910)"
+            ),
             setup_fn=interactive_setup,
             emoji="\U0001f9e9",
             allowed_users_env="A2A_ALLOWED_USERS",

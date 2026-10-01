@@ -5,8 +5,8 @@ Passport JWT inbound auth (`token_id` identity), peer `/api/login` +
 `/api/login/timestamp`, and outbound `a2a_call` that mints per-peer JWTs via the
 **auth sidecar**.
 
-Requires the host auth package ([hermes-identyclaw-auth](https://github.com/discernible-io/hermes-identyclaw-auth))
-— CLI + sidecar — **not** a Hermes plugin.
+**Depends on** the [`identyclaw-auth`](https://github.com/discernible-io/hermes-identyclaw-auth)
+plugin (`requires_plugins`) and a healthy auth sidecar on `:9910`.
 
 Follows the stock [Hermes Plugins](https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins/) flow:
 `hermes plugins install owner/repo` → enable (opt-in) → capability consent.
@@ -27,9 +27,17 @@ unreviewed Git path (same as any third-party plugin).
 
 ## Install (default Hermes UX)
 
-Sidecar must be healthy first (`curl -fsS http://127.0.0.1:9910/health`).
+Auth plugin + sidecar must be healthy first:
 
-Interactive (matches the Plugins guide — install, then answer the prompts):
+```bash
+hermes plugins install discernible-io/hermes-identyclaw-auth --enable
+hermes identyclaw install-deps
+hermes identyclaw enroll && hermes identyclaw ensure_session
+hermes identyclaw sidecar start
+curl -fsS http://127.0.0.1:9910/health
+```
+
+Interactive A2A install (matches the Plugins guide — install, then answer the prompts):
 
 ```bash
 export HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
@@ -53,9 +61,6 @@ Restart the gateway if it is already running (`hermes gateway restart`).
 
 ### Scripted / non-interactive
 
-Same CLI flags the guide documents (`--no-enable` / `--enable`). Non-interactive
-sessions fail closed on capability consent — pass `--allow-tool-override` on enable:
-
 ```bash
 hermes plugins install discernible-io/hermes-identyclaw-a2a --no-enable
 hermes plugins disable platforms/a2a
@@ -75,6 +80,7 @@ hermes plugins enable identyclaw-a2a --allow-tool-override
 ```yaml
 plugins:
   enabled:
+    - identyclaw-auth
     - identyclaw-a2a
   disabled:
     - platforms/a2a
@@ -97,7 +103,7 @@ disable bundled for stock installs.
 ## Full playbook
 
 ```bash
-bash "$HERMES_HOME/hermes-identyclaw-auth/scripts/install-stock-hermes.sh" \
+bash "$HERMES_HOME/plugins/identyclaw-auth/scripts/install-stock-hermes.sh" \
   --a2a-public-url "https://YOUR.PUBLIC.HOST"
 ```
 

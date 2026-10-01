@@ -12,6 +12,8 @@ description: >
   After install: `hermes plugins disable platforms/a2a` then
   `hermes plugins enable identyclaw-a2a --allow-tool-override`.
 author: Discernible IO
+manifest_version: 2
+api_version: 1
 capabilities:
   - tools.override
 provides_tools:
@@ -20,10 +22,13 @@ provides_tools:
   - a2a_list
   - a2a_history
   - a2a_orchestrate
+requires_plugins:
+  - id: identyclaw-auth
+    version_range: ">=0.2.0"
 requires_env: []
 optional_env:
   - name: IDENTYCLAW_AUTH_PORT
-    description: "Localhost auth sidecar port (default 9910)."
+    description: "Localhost auth sidecar port (default 9910). Enable identyclaw-auth and run `hermes identyclaw sidecar start` first."
     prompt: "IdentyClaw auth sidecar port"
     password: false
   - name: A2A_PUBLIC_URL
