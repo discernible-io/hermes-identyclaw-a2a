@@ -116,3 +116,13 @@ bash "$HERMES_HOME/plugins/identyclaw-auth/scripts/install-stock-hermes.sh" \
 | `A2A_PUBLIC_URL` | Public HTTPS base (Agent Card / discovery) |
 | `A2A_PORT` / `A2A_HOST` | Inbound listen |
 | `IDENTYCLAW_JWT_AUDIENCE` | Optional fallback only |
+
+<!-- discernible-io:product-links -->
+## Links
+
+Maintained by [Discernible](https://www.discernible.io/).
+
+- **Product:** [discernible.io](https://www.discernible.io/)
+- **Get a Passport:** [purchase.identyclaw.com](https://purchase.identyclaw.com) (buy once — no subscription)
+- **Verify HOLA:** [verify.identyclaw.com](https://verify.identyclaw.com)
+<!-- /discernible-io:product-links -->
